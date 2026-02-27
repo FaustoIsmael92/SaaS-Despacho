@@ -2,6 +2,13 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
+/** Compatible con User de Supabase (email puede ser string | undefined). */
+type AuthUser = {
+  id: string;
+  email?: string | null;
+  user_metadata?: Record<string, unknown>;
+};
+
 /**
  * Crea o actualiza la fila en public.users tras el registro en Supabase Auth.
  * Se llama desde el cliente después de signUp. El usuario queda en estado "pending".
@@ -11,7 +18,7 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   const supabase = await createClient();
 
-  let user: { id: string; email: string | null; user_metadata?: Record<string, unknown> } | null = null;
+  let user: AuthUser | null = null;
 
   try {
     const body = await request.json().catch(() => ({}));
@@ -19,15 +26,15 @@ export async function POST(request: Request) {
 
     if (accessToken) {
       const { data: { user: u } } = await supabase.auth.getUser(accessToken);
-      user = u;
+      user = u as AuthUser | null;
     }
     if (!user) {
       const { data: { user: u } } = await supabase.auth.getUser();
-      user = u;
+      user = u as AuthUser | null;
     }
   } catch {
     const { data: { user: u } } = await supabase.auth.getUser();
-    user = u;
+    user = u as AuthUser | null;
   }
 
   if (!user) {
