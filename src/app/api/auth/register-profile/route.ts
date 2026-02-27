@@ -26,15 +26,15 @@ export async function POST(request: Request) {
 
     if (accessToken) {
       const { data: { user: u } } = await supabase.auth.getUser(accessToken);
-      user = u as AuthUser | null;
+      user = u ? { id: u.id, email: u.email ?? null, user_metadata: u.user_metadata } : null;
     }
     if (!user) {
       const { data: { user: u } } = await supabase.auth.getUser();
-      user = u as AuthUser | null;
+      user = u ? { id: u.id, email: u.email ?? null, user_metadata: u.user_metadata } : null;
     }
   } catch {
     const { data: { user: u } } = await supabase.auth.getUser();
-    user = u as AuthUser | null;
+    user = u ? { id: u.id, email: u.email ?? null, user_metadata: u.user_metadata } : null;
   }
 
   if (!user) {
