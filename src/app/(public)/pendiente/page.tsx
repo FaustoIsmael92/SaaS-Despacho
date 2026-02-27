@@ -10,7 +10,7 @@ export default async function PendientePage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect("/");
   }
 
   const profile = await prisma.user.findUnique({

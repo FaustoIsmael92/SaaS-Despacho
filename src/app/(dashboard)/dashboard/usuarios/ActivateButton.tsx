@@ -13,7 +13,11 @@ export function ActivateButton({ userId }: { userId: string }) {
       const res = await fetch(`/api/admin/users/${userId}/activate`, {
         method: "PATCH",
       });
-      if (!res.ok) throw new Error("Error");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error ?? "Error al activar");
+        return;
+      }
       router.refresh();
     } finally {
       setLoading(false);

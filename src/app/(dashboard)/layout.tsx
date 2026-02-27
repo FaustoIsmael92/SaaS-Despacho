@@ -11,7 +11,7 @@ export default async function DashboardLayout({
   const user = await getAuthUser();
 
   if (!user) {
-    redirect(`${ROUTES.LOGIN}?next=${encodeURIComponent("/dashboard")}`);
+    redirect(`/?next=${encodeURIComponent("/dashboard")}`);
   }
 
   if (user.status !== "active" || !user.isActive) {

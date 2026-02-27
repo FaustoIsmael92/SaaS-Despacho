@@ -1,27 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function RegistroPage() {
+function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    if (!success) return;
-    const id = setTimeout(() => {
-      router.push("/pendiente");
-      router.refresh();
-    }, 1500);
-    return () => clearTimeout(id);
-  }, [success, router]);
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") ?? "/dashboard";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,60 +31,25 @@ export default function RegistroPage() {
       );
       return;
     }
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    const { error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
-      options: {
-        data: { full_name: fullName },
-      },
     });
-    if (signUpError) {
-      setLoading(false);
-      setError(signUpError.message);
+    setLoading(false);
+    if (signInError) {
+      setError(signInError.message);
       return;
     }
-    try {
-      // Crear perfil en public.users (estado pendiente).
-      // Enviamos el access_token porque las cookies pueden no estar listas aún.
-      const accessToken = signUpData.session?.access_token ?? null;
-      const res = await fetch("/api/auth/register-profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(accessToken ? { accessToken } : {}),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error ?? "Error al crear perfil");
-        setLoading(false);
-        return;
-      }
-      setLoading(false);
-      setSuccess(true);
-    } catch (err) {
-      setError("Error de conexión. Intenta de nuevo.");
-      setLoading(false);
-    }
-  }
-
-  if (success) {
-    return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-6 text-center">
-          <p className="text-zinc-700">
-            Cuenta creada. Tu acceso quedará activo cuando un administrador te
-            apruebe. Redirigiendo…
-          </p>
-        </div>
-      </div>
-    );
+    await router.push(next);
+    router.refresh();
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-sm rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
-        <h1 className="text-xl font-semibold text-zinc-900">Registro</h1>
+        <h1 className="text-xl font-semibold text-zinc-900">Iniciar sesión</h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Contadores – acceso pendiente de activación
+          Despacho Contable
         </p>
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           {error && (
@@ -101,20 +57,6 @@ export default function RegistroPage() {
               {error}
             </div>
           )}
-          <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-zinc-700">
-              Nombre completo
-            </label>
-            <input
-              id="fullName"
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-              className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-zinc-900 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
-              autoComplete="name"
-            />
-          </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-zinc-700">
               Correo
@@ -139,9 +81,8 @@ export default function RegistroPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
               className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-zinc-900 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500"
-              autoComplete="new-password"
+              autoComplete="current-password"
             />
           </div>
           <button
@@ -149,16 +90,24 @@ export default function RegistroPage() {
             disabled={loading}
             className="w-full rounded-lg bg-zinc-900 py-2 font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
           >
-            {loading ? "Creando cuenta…" : "Registrarme"}
+            {loading ? "Entrando…" : "Entrar"}
           </button>
         </form>
         <p className="mt-4 text-center text-sm text-zinc-500">
-          ¿Ya tienes cuenta?{" "}
-          <Link href="/" className="font-medium text-zinc-900 underline">
-            Iniciar sesión
+          ¿No tienes cuenta?{" "}
+          <Link href="/registro" className="font-medium text-zinc-900 underline">
+            Registrarse
           </Link>
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginView() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Cargando…</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
