@@ -4,26 +4,41 @@ src/
 │   ├── (public)/               # Rutas públicas
 │   │   ├── page.tsx            # Landing
 │   │   ├── login/
-│   │   │   └── page.tsx
+│   │   ├── registro/
+│   │   ├── pendiente/
 │   │   └── portal/
 │   │       └── [token]/
+│   │           └── page.tsx     # Portal cliente (empleados, alta, baja, incapacidad, vacaciones)
+│   │
+│   ├── (dashboard)/            # Layout autenticado (sidebar)
+│   │   ├── layout.tsx          # DashboardSidebar + main
+│   │   ├── page.tsx            # Redirige al dashboard
+│   │   ├── dashboard/
+│   │   │   ├── page.tsx        # Dashboard principal (3 columnas + urgentes)
+│   │   │   ├── DashboardLayout.tsx
+│   │   │   └── usuarios/       # Gestión usuarios (admin)
+│   │   ├── clientes/
+│   │   ├── recibos/
+│   │   ├── nomina/
+│   │   └── tasks/
+│   │       ├── page.tsx
+│   │       ├── new/
+│   │       └── [id]/
 │   │           ├── page.tsx
-│   │           ├── receipts/
-│   │           └── employees/
+│   │           └── edit/
 │   │
-│   ├── (dashboard)/            # Layout autenticado
-│   │   ├── layout.tsx
-│   │   ├── page.tsx            # Dashboard
-│   │   │
-│   │   ├── clients/
-│   │   ├── employees/
-│   │   ├── payroll-events/
-│   │   ├── tasks/
-│   │   ├── receipts/
-│   │   └── settings/
-│   │
-│   └── api/                    # SOLO si necesitas ocultar secretos
-│       └── secure/
+│   └── api/
+│       ├── auth/
+│       ├── cron/               # reschedule, monthly-activities (Vercel Cron)
+│       ├── dashboard-messages/
+│       ├── clients/            # GET, POST; [id] GET, PATCH
+│       ├── receipts/           # [id]/pdf
+│       ├── concepts/
+│       ├── tasks/              # urgent, saturation, [id], subtasks, comments
+│       ├── monthly-activities/
+│       ├── payroll-events/
+│       ├── portal/[token]/     # employees, alta, baja, incapacidad, vacaciones, reactivate
+│       └── admin/users/        # activate, deactivate
 │
 ├── modules/                    # Lógica por dominio (Feature-based)
 │   ├── clients/

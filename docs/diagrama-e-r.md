@@ -6,10 +6,13 @@ erDiagram
 
     employees ||--|{ payroll_events : "1..N"
 
-    users ||--o{ tasks : "creates 0..N"
-    users ||--o{ tasks : "assigned 0..N"
-    users ||--o{ comments : "0..N"
-    users ||--o{ monthly_activities : "0..N"
+users ||--o{ tasks : "creates 0..N"
+users ||--o{ tasks : "assigned 0..N"
+users ||--o{ comments : "0..N"
+users ||--o{ monthly_activities : "0..N"
+users ||--o{ dashboard_messages : "0..N"
+
+monthly_activities ||--o{ tasks : "0..N"
 
     tasks ||--o{ subtasks : "0..N"
     tasks ||--o{ comments : "0..N"
@@ -20,6 +23,8 @@ erDiagram
     clients {
         uuid id PK
         varchar name
+        varchar rfc
+        varchar clave_patronal
         varchar portal_token
         boolean is_active
     }
@@ -96,6 +101,7 @@ erDiagram
         varchar status
         boolean is_urgent
         boolean is_active
+        uuid monthly_activity_id FK
         timestamptz created_at
         timestamptz updated_at
     }
@@ -150,5 +156,13 @@ erDiagram
         uuid id PK
         varchar name
         boolean is_active
+        timestamptz created_at
+    }
+
+    dashboard_messages {
+        uuid id PK
+        uuid user_id FK
+        varchar content
+        boolean is_pinned
         timestamptz created_at
     }

@@ -66,6 +66,7 @@ comments       Comment[]
 monthlyActivities MonthlyActivity[]
 createdEmployees Employee[] @relation("EmployeeCreatedBy")
 payrollEvents   PayrollEvent[] @relation("PayrollEventCreatedBy")
+dashboardMessages DashboardMessage[]
 }
 
 //////////////////////////////////////////////////////
@@ -73,19 +74,24 @@ payrollEvents   PayrollEvent[] @relation("PayrollEventCreatedBy")
 //////////////////////////////////////////////////////
 
 model Client {
-id          String   @id @default(uuid()) @db.Uuid
-name        String   @db.VarChar(200)
-email       String?  @db.VarChar(255)
-phone       String?  @db.VarChar(20)
-portalToken String   @unique @db.VarChar(255)
-isActive    Boolean  @default(true)
+id             String   @id @default(uuid()) @db.Uuid
+name           String   @db.VarChar(200)
+rfc            String   @db.VarChar(20)
+clavePatronal  String?  @map("clave_patronal") @db.VarChar(50)
+email          String?  @db.VarChar(255)
+phone          String?  @db.VarChar(20)
+portalToken    String   @unique @map("portal_token") @db.VarChar(255)
+isActive       Boolean  @default(true) @map("is_active")
 
-createdAt   DateTime @default(now())
-updatedAt   DateTime @updatedAt
+createdAt DateTime @default(now()) @map("created_at")
+updatedAt DateTime @updatedAt @map("updated_at")
 
 employees     Employee[]
 payrollEvents PayrollEvent[]
 receipts      Receipt[]
+
+@@index([rfc])
+@@map("clients")
 }
 
 //////////////////////////////////////////////////////
@@ -150,6 +156,23 @@ payrollEvents PayrollEvent[]
 }
 
 //////////////////////////////////////////////////////
+// DASHBOARD MESSAGES (chat fijable)
+//////////////////////////////////////////////////////
+
+model DashboardMessage {
+id       String   @id @default(uuid()) @db.Uuid
+userId   String   @map("user_id") @db.Uuid
+user     User     @relation(fields: [userId], references: [id])
+content  String   @db.VarChar(2000)
+isPinned Boolean  @default(false) @map("is_pinned")
+createdAt DateTime @default(now()) @map("created_at")
+
+@@index([userId])
+@@index([isPinned])
+@@map("dashboard_messages")
+}
+
+//////////////////////////////////////////////////////
 // PAYROLL EVENTS
 //////////////////////////////////////////////////////
 
@@ -195,14 +218,19 @@ status    TaskStatus
 isUrgent  Boolean   @default(false)
 isActive  Boolean   @default(true)
 
-createdAt DateTime  @default(now())
-updatedAt DateTime  @updatedAt
+monthlyActivityId String? @map("monthly_activity_id") @db.Uuid
+monthlyActivity   MonthlyActivity? @relation(fields: [monthlyActivityId], references: [id])
+
+createdAt DateTime  @default(now()) @map("created_at")
+updatedAt DateTime  @updatedAt @map("updated_at")
 
 subtasks Subtask[]
 comments Comment[]
 
 @@index([assignedToId])
 @@index([dueDate])
+@@index([isActive])
+@@map("tasks")
 }
 
 //////////////////////////////////////////////////////
@@ -243,15 +271,19 @@ createdAt DateTime @default(now())
 //////////////////////////////////////////////////////
 
 model MonthlyActivity {
-id         String @id @default(uuid()) @db.Uuid
-userId     String @db.Uuid
-user       User   @relation(fields: [userId], references: [id])
+id         String  @id @default(uuid()) @db.Uuid
+userId     String  @map("user_id") @db.Uuid
+user       User    @relation(fields: [userId], references: [id])
 
-title       String @db.VarChar(200)
-dayOfMonth  Int
-isActive    Boolean @default(true)
+title       String  @db.VarChar(200)
+dayOfMonth  Int     @map("day_of_month")
+isActive    Boolean @default(true) @map("is_active")
 
-createdAt   DateTime @default(now())
+createdAt   DateTime @default(now()) @map("created_at")
+
+tasks Task[]
+
+@@map("monthly_activities")
 }
 
 //////////////////////////////////////////////////////

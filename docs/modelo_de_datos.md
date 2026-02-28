@@ -43,6 +43,8 @@ Clientes del despacho.
 ## Estructura
 - id → uuid (PK, NOT NULL)
 - name → varchar(200) (NOT NULL)
+- rfc → varchar(20) (NOT NULL)
+- clave_patronal → varchar(50) (NULL)
 - email → varchar(255) (NULL)
 - phone → varchar(20) (NULL)
 - portal_token → varchar(255) (NOT NULL, UNIQUE, INDEX)
@@ -52,6 +54,7 @@ Clientes del despacho.
 
 ## Índices
 - UNIQUE(portal_token)
+- INDEX(rfc)
 
 ## Seguridad
 - Token mínimo 128 bits
@@ -158,12 +161,14 @@ Sistema interno de tareas.
 - status → varchar(30) (NOT NULL CHECK IN ('pending','completed'))
 - is_urgent → boolean (NOT NULL default false)
 - is_active → boolean (NOT NULL default true)
+- monthly_activity_id → uuid (FK → monthly_activities.id, NULL)
 - created_at → timestamptz (NOT NULL default now())
 - updated_at → timestamptz
 
 ## Índices
 - INDEX(assigned_to)
 - INDEX(due_date)
+- INDEX(is_active)
 
 ---
 
@@ -195,6 +200,20 @@ Sistema interno de tareas.
 - day_of_month → integer (NOT NULL CHECK BETWEEN 1 AND 31)
 - is_active → boolean (NOT NULL default true)
 - created_at → timestamptz (NOT NULL default now())
+
+Las tareas generadas a partir de una actividad mensual tienen monthly_activity_id referenciando esta tabla.
+
+---
+
+# 8b TABLA: dashboard_messages
+
+- id → uuid (PK)
+- user_id → uuid (FK → users.id, NOT NULL, INDEX)
+- content → varchar(2000) (NOT NULL)
+- is_pinned → boolean (NOT NULL default false, INDEX)
+- created_at → timestamptz (NOT NULL default now())
+
+Chat interno del dashboard; mensajes editables y fijables.
 
 ---
 
